@@ -1,0 +1,75 @@
+@startuml entity-database-plain
+skinparam linetype ortho
+title Library Management — Database Design
+
+entity "Authors" as authors {
+  * **Id : uuid** <<PK>>
+  --
+  * Name : varchar(200)
+    Bio : varchar(2000)
+  * CreatedAt : timestamptz
+  * UpdatedAt : timestamptz
+}
+
+entity "Genres" as genres {
+  * **Id : uuid** <<PK>>
+  --
+  * Name : varchar(100)
+  * CreatedAt : timestamptz
+  * UpdatedAt : timestamptz
+}
+
+entity "Publishers" as publishers {
+  * **Id : uuid** <<PK>>
+  --
+  * Name : varchar(200)
+  * CreatedAt : timestamptz
+  * UpdatedAt : timestamptz
+}
+
+entity "Books" as books {
+  * **Id : uuid** <<PK>>
+  --
+  * Title : varchar(300)
+  * ISBN : varchar(13) <<UQ>>
+  * PublicationYear : integer
+  * TotalCopies : integer
+  * AvailableCopies : integer
+  * AuthorId : uuid <<FK>>
+    GenreId : uuid <<FK>>
+    PublisherId : uuid <<FK>>
+  * CreatedAt : timestamptz
+  * UpdatedAt : timestamptz
+}
+
+entity "Members" as members {
+  * **Id : uuid** <<PK>>
+  --
+  * FullName : varchar(200)
+  * Email : varchar(256) <<UQ>>
+    PhoneNumber : varchar(20)
+  * MembershipDate : timestamptz
+  * IsActive : boolean
+  * CreatedAt : timestamptz
+  * UpdatedAt : timestamptz
+}
+
+entity "Loans" as loans {
+  * **Id : uuid** <<PK>>
+  --
+  * BookId : uuid <<FK>>
+  * MemberId : uuid <<FK>>
+  * LoanDate : timestamptz
+  * DueDate : timestamptz
+    ReturnDate : timestamptz
+  * IsReturned : boolean
+  * CreatedAt : timestamptz
+  * UpdatedAt : timestamptz
+}
+
+authors    ||--o{ books
+genres     ||--o{ books
+publishers ||--o{ books
+books      ||--o{ loans
+members    ||--o{ loans
+@enduml
