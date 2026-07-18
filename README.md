@@ -171,6 +171,22 @@ On first startup the database is populated with:
 - **3 Books:** 1984, Pride and Prejudice, The Old Man and the Sea
 - **2 Members:** Alice Johnson, Bob Smith
 
+## Deployment (Render — free tier)
+
+GitHub Pages is static-only and cannot host APIs. This project deploys to [Render](https://render.com) with a free PostgreSQL instance:
+
+1. Push this repo to GitHub (already done)
+2. Go to [render.com](https://render.com) → **New** → **Blueprint** → connect your GitHub repo
+3. Render reads `render.yaml` and creates:
+   - A free PostgreSQL database (auto-provisioned)
+   - A free web service running the Dockerfile
+4. The API auto-migrates and seeds on first boot
+5. Swagger UI is available at `https://your-app.onrender.com/swagger`
+
+> **Note:** Render free tier spins down after 15 min of inactivity (cold start ~30s). For always-on, upgrade to the paid tier or use [Fly.io](https://fly.io).
+
+Other free options: [Railway](https://railway.app) ($5/month credit), [Koyeb](https://koyeb.com) (2 free services), [Azure App Service](https://azure.microsoft.com/free/app-service/) (F1 free tier).
+
 ## License
 
 MIT

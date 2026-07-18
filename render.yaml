@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: librarymanagement-api
+    runtime: docker
+    dockerfilePath: ./LibraryManagement.API/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Development
+      - key: ConnectionStrings__DefaultConnection
+        fromDatabase:
+          name: librarymanagement-db
+          property: connectionString
+  - type: pserv
+    name: librarymanagement-db
+    plan: free
+    databaseName: librarymanagement
+    databaseUser: postgres
