@@ -1,6 +1,266 @@
-@LibraryManagement_HostAddress = http://localhost:5046
+@host = http://localhost:8080
 
-GET {{LibraryManagement_HostAddress}}/weatherforecast/
+### ===== AUTHORS =====
+
+# GET /api/Authors — list (200 OK)
+GET {{host}}/api/Authors
 Accept: application/json
 
 ###
+@authorId = 28843915-a2f5-4aa0-a6e1-0fcabbf1ed72
+
+# GET /api/Authors/{id} — by ID (200 OK)
+GET {{host}}/api/Authors/{{authorId}}
+Accept: application/json
+
+###
+
+# POST /api/Authors — create (201 Created + Location header)
+POST {{host}}/api/Authors
+Content-Type: application/json
+
+{
+  "name": "Fyodor Dostoevsky",
+  "bio": "Russian novelist and philosopher."
+}
+
+###
+
+# PUT /api/Authors/{id} — update (200 OK)
+PUT {{host}}/api/Authors/{{authorId}}
+Content-Type: application/json
+
+{
+  "name": "Fyodor Dostoevsky",
+  "bio": "Updated bio."
+}
+
+###
+
+# DELETE /api/Authors/{id} — delete (204 No Content)
+DELETE {{host}}/api/Authors/{{authorId}}
+
+### ===== BOOKS =====
+
+# GET /api/Books — list with filters (200 OK)
+GET {{host}}/api/Books?title=1984&sortBy=title&pageNumber=1&pageSize=5
+Accept: application/json
+
+###
+@bookId = 72dbea80-2d03-481c-85d6-43493ae4ccee
+
+# GET /api/Books/{id} — by ID (200 OK)
+GET {{host}}/api/Books/{{bookId}}
+Accept: application/json
+
+###
+@genreId = c39a9edd-0993-4ae1-bf13-4a3b45ecf6e0
+@publisherId = fb96fa87-9b6b-4371-94bc-b17c8f19d3c9
+
+# POST /api/Books — create (201 Created)
+POST {{host}}/api/Books
+Content-Type: application/json
+
+{
+  "title": "Crime and Punishment",
+  "isbn": "9780140449136",
+  "publicationYear": 1866,
+  "totalCopies": 3,
+  "availableCopies": 3,
+  "authorId": "{{authorId}}",
+  "genreId": "{{genreId}}",
+  "publisherId": "{{publisherId}}"
+}
+
+###
+
+# PUT /api/Books/{id} — update (200 OK)
+PUT {{host}}/api/Books/{{bookId}}
+Content-Type: application/json
+
+{
+  "title": "Crime and Punishment",
+  "isbn": "9780140449136",
+  "publicationYear": 1866,
+  "totalCopies": 5,
+  "availableCopies": 5,
+  "authorId": "{{authorId}}",
+  "genreId": "{{genreId}}",
+  "publisherId": "{{publisherId}}"
+}
+
+###
+
+# DELETE /api/Books/{id} — delete (204 No Content)
+DELETE {{host}}/api/Books/{{bookId}}
+
+### ===== GENRES =====
+
+# GET /api/Genres — list (200 OK)
+GET {{host}}/api/Genres
+Accept: application/json
+
+###
+
+# GET /api/Genres/{id} — by ID (200 OK)
+GET {{host}}/api/Genres/{{genreId}}
+Accept: application/json
+
+###
+
+# POST /api/Genres — create (201 Created)
+POST {{host}}/api/Genres
+Content-Type: application/json
+
+{
+  "name": "Science Fiction"
+}
+
+###
+
+# PUT /api/Genres/{id} — update (200 OK)
+PUT {{host}}/api/Genres/{{genreId}}
+Content-Type: application/json
+
+{
+  "name": "Sci-Fi"
+}
+
+###
+
+# DELETE /api/Genres/{id} — delete (204 No Content)
+DELETE {{host}}/api/Genres/{{genreId}}
+
+### ===== PUBLISHERS =====
+
+# GET /api/Publishers — list (200 OK)
+GET {{host}}/api/Publishers
+Accept: application/json
+
+###
+
+# GET /api/Publishers/{id} — by ID (200 OK)
+GET {{host}}/api/Publishers/{{publisherId}}
+Accept: application/json
+
+###
+
+# POST /api/Publishers — create (201 Created)
+POST {{host}}/api/Publishers
+Content-Type: application/json
+
+{
+  "name": "Vintage Books"
+}
+
+###
+
+# PUT /api/Publishers/{id} — update (200 OK)
+PUT {{host}}/api/Publishers/{{publisherId}}
+Content-Type: application/json
+
+{
+  "name": "Vintage International"
+}
+
+###
+
+# DELETE /api/Publishers/{id} — delete (204 No Content)
+DELETE {{host}}/api/Publishers/{{publisherId}}
+
+### ===== MEMBERS =====
+
+# GET /api/Members — list (200 OK)
+GET {{host}}/api/Members
+Accept: application/json
+
+###
+
+# GET /api/Members/{id} — by ID (200 OK)
+GET {{host}}/api/Members/{{memberId}}
+Accept: application/json
+
+###
+
+# POST /api/Members — create (201 Created)
+POST {{host}}/api/Members
+Content-Type: application/json
+
+{
+  "fullName": "Charlie Brown",
+  "email": "charlie@example.com",
+  "phoneNumber": "+1 555 0103"
+}
+
+###
+
+# PUT /api/Members/{id} — update (200 OK)
+PUT {{host}}/api/Members/{{memberId}}
+Content-Type: application/json
+
+{
+  "fullName": "Charlie Brown",
+  "email": "charlie@example.com",
+  "phoneNumber": "+1 555 0999"
+}
+
+###
+
+# DELETE /api/Members/{id} — delete (204 No Content)
+DELETE {{host}}/api/Members/{{memberId}}
+
+### ===== LOANS =====
+
+# GET /api/Loans — list with filters (200 OK)
+GET {{host}}/api/Loans?isOverdue=false&sortBy=loanDate&pageNumber=1&pageSize=10
+Accept: application/json
+
+###
+
+# GET /api/Loans/{id} — by ID (200 OK)
+GET {{host}}/api/Loans/{{loanId}}
+Accept: application/json
+
+###
+
+# POST /api/Loans — checkout (201 Created)
+POST {{host}}/api/Loans
+Content-Type: application/json
+
+{
+  "bookId": "{{bookId}}",
+  "memberId": "{{memberId}}"
+}
+
+###
+
+# POST /api/Loans/{id}/return — return (204 No Content)
+POST {{host}}/api/Loans/{{loanId}}/return
+
+### ===== ERROR CASES =====
+
+# GET non-existent — 404 Not Found
+GET {{host}}/api/Authors/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+###
+
+# POST invalid body — 400 Bad Request (FluentValidation)
+POST {{host}}/api/Authors
+Content-Type: application/json
+
+{
+  "name": "",
+  "bio": "test"
+}
+
+###
+
+# POST loan with unavailable book — 400 Bad Request (BusinessRuleException)
+POST {{host}}/api/Loans
+Content-Type: application/json
+
+{
+  "bookId": "00000000-0000-0000-0000-000000000000",
+  "memberId": "{{memberId}}"
+}
