@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagement.API.Controllers;
 
+/// <summary>
+/// Manages genre resources including creation, retrieval, updating, and deletion.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class GenresController : ControllerBase
@@ -20,6 +23,9 @@ public class GenresController : ControllerBase
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Retrieves a paginated list of genres with optional filtering.
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult> GetGenres([FromQuery] GenreFilter filter, CancellationToken cancellationToken)
     {
@@ -27,6 +33,12 @@ public class GenresController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Retrieves a single genre by its unique identifier.
+    /// </summary>
+    /// <param name="id">The genre's unique identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="404">The genre was not found.</response>
     [HttpGet("{id:guid}")]
     public async Task<ActionResult> GetGenreById(Guid id, CancellationToken cancellationToken)
     {
@@ -34,6 +46,12 @@ public class GenresController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Creates a new genre.
+    /// </summary>
+    /// <param name="dto">The genre details.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="201">The genre was created successfully.</response>
     [HttpPost]
     public async Task<ActionResult> CreateGenre([FromBody] CreateGenreDto dto, CancellationToken cancellationToken)
     {
@@ -41,6 +59,13 @@ public class GenresController : ControllerBase
         return CreatedAtAction(nameof(GetGenreById), new { id = result.Id }, result);
     }
 
+    /// <summary>
+    /// Updates an existing genre.
+    /// </summary>
+    /// <param name="id">The genre's unique identifier.</param>
+    /// <param name="dto">The updated genre details.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="404">The genre was not found.</response>
     [HttpPut("{id:guid}")]
     public async Task<ActionResult> UpdateGenre(Guid id, [FromBody] UpdateGenreDto dto, CancellationToken cancellationToken)
     {
@@ -48,6 +73,14 @@ public class GenresController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Deletes a genre. Fails if the genre still has associated books.
+    /// </summary>
+    /// <param name="id">The genre's unique identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="204">The genre was deleted successfully.</response>
+    /// <response code="400">The genre has associated books and cannot be deleted.</response>
+    /// <response code="404">The genre was not found.</response>
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteGenre(Guid id, CancellationToken cancellationToken)
     {

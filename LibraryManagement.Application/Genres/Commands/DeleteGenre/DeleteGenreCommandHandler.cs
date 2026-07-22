@@ -2,6 +2,7 @@ using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Application.Common;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Application.Genres.Commands.DeleteGenre;
 
@@ -16,7 +17,9 @@ public class DeleteGenreCommandHandler : IRequestHandler<DeleteGenreCommand, Uni
 
     public async Task<Unit> Handle(DeleteGenreCommand request, CancellationToken cancellationToken)
     {
-        var genre = await _context.Genres.FindAsync(new object[] { request.Id }, cancellationToken);
+        var genre = await _context.Genres
+            .Include(g => g.Books)
+            .FirstOrDefaultAsync(g => g.Id == request.Id, cancellationToken);
 
         if (genre is null)
         {

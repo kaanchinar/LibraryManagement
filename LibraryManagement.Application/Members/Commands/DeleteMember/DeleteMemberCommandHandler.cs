@@ -2,6 +2,7 @@ using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Application.Common;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Application.Members.Commands.DeleteMember;
 
@@ -16,7 +17,9 @@ public class DeleteMemberCommandHandler : IRequestHandler<DeleteMemberCommand, U
 
     public async Task<Unit> Handle(DeleteMemberCommand request, CancellationToken cancellationToken)
     {
-        var member = await _context.Members.FindAsync(new object[] { request.Id }, cancellationToken);
+        var member = await _context.Members
+            .Include(m => m.Loans)
+            .FirstOrDefaultAsync(m => m.Id == request.Id, cancellationToken);
 
         if (member is null)
         {

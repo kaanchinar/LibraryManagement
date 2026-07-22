@@ -2,6 +2,7 @@ using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Application.Common;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Application.Books.Commands.DeleteBook;
 
@@ -16,7 +17,9 @@ public class DeleteBookCommandHandler : IRequestHandler<DeleteBookCommand, Unit>
 
     public async Task<Unit> Handle(DeleteBookCommand request, CancellationToken cancellationToken)
     {
-        var book = await _context.Books.FindAsync(new object[] { request.Id }, cancellationToken);
+        var book = await _context.Books
+            .Include(b => b.Loans)
+            .FirstOrDefaultAsync(b => b.Id == request.Id, cancellationToken);
 
         if (book is null)
         {

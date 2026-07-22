@@ -2,6 +2,7 @@ using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Application.Common;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Application.Authors.Commands.DeleteAuthor;
 
@@ -16,7 +17,9 @@ public class DeleteAuthorCommandHandler : IRequestHandler<DeleteAuthorCommand, U
 
     public async Task<Unit> Handle(DeleteAuthorCommand request, CancellationToken cancellationToken)
     {
-        var author = await _context.Authors.FindAsync(new object[] { request.Id }, cancellationToken);
+        var author = await _context.Authors
+            .Include(a => a.Books)
+            .FirstOrDefaultAsync(a => a.Id == request.Id, cancellationToken);
 
         if (author is null)
         {
