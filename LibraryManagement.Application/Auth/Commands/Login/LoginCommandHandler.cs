@@ -6,7 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Application.Auth.Commands.Login;
 
-public class LoginCommandHandler(IAppDbContext context, IJwtTokenService jwtTokenService)
+public class LoginCommandHandler(
+    IAppDbContext context,
+    IJwtTokenService jwtTokenService,
+    IRefreshTokenService refreshTokenService)
     : IRequestHandler<LoginCommand, AuthResponse>
 {
     public async Task<AuthResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -20,6 +23,17 @@ public class LoginCommandHandler(IAppDbContext context, IJwtTokenService jwtToke
         }
 
         var token = jwtTokenService.GenerateToken(user);
-        return new AuthResponse(token.Token, token.ExpiresAt);
+        var refreshToken = refreshTokenService.GenerateToken();
+
+        context.RefreshTokens.Add(new Domain.Entities.RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            TokenHash = refreshTokenService.HashToken(refreshToken.Token),
+            ExpiresAt = refreshToken.ExpiresAt,
+            UserId = user.Id
+        });
+        await context.SaveChangesAsync(cancellationToken);
+
+        return new AuthResponse(token.Token, token.ExpiresAt, refreshToken.Token);
     }
 }
