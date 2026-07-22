@@ -1,14 +1,16 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
+using LibraryManagement.Application.Auth.Dtos;
 using LibraryManagement.Application.Authors.Dtos;
 using LibraryManagement.Application.Common;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace LibraryManagement.IntegrationTests;
 
-public class AuthorsApiTests : IClassFixture<CustomWebApplicationFactory>
+public class AuthorsApiTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLifetime
 {
     private readonly HttpClient _client;
 
@@ -19,6 +21,16 @@ public class AuthorsApiTests : IClassFixture<CustomWebApplicationFactory>
             AllowAutoRedirect = false
         });
     }
+
+    public async Task InitializeAsync()
+    {
+        var response = await _client.PostAsJsonAsync("/api/auth/login",
+            new LoginRequest("admin@library.com", "Admin@123"));
+        var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result!.Token);
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task CreateAuthor_Should_Return_201_And_Location()

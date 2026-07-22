@@ -5,6 +5,7 @@ using LibraryManagement.Application.Authors.Dtos;
 using LibraryManagement.Application.Authors.Queries.GetAuthorById;
 using LibraryManagement.Application.Authors.Queries.GetAuthors;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagement.API.Controllers;
@@ -14,6 +15,7 @@ namespace LibraryManagement.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class AuthorsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -52,6 +54,7 @@ public class AuthorsController : ControllerBase
     /// <param name="dto">The author details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="201">The author was created successfully.</response>
+    [Authorize(Roles = "Admin,Librarian")]
     [HttpPost]
     public async Task<ActionResult> CreateAuthor([FromBody] CreateAuthorDto dto, CancellationToken cancellationToken)
     {
@@ -66,6 +69,7 @@ public class AuthorsController : ControllerBase
     /// <param name="dto">The updated author details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="404">The author was not found.</response>
+    [Authorize(Roles = "Admin,Librarian")]
     [HttpPut("{id:guid}")]
     public async Task<ActionResult> UpdateAuthor(Guid id, [FromBody] UpdateAuthorDto dto, CancellationToken cancellationToken)
     {
@@ -81,6 +85,7 @@ public class AuthorsController : ControllerBase
     /// <response code="204">The author was deleted successfully.</response>
     /// <response code="400">The author has associated books and cannot be deleted.</response>
     /// <response code="404">The author was not found.</response>
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteAuthor(Guid id, CancellationToken cancellationToken)
     {

@@ -36,6 +36,7 @@ public class ExceptionHandlerMiddleware
             NotFoundException notFoundException => ((int)HttpStatusCode.NotFound, notFoundException.Message, (string[]?)null),
             BusinessRuleException businessRuleException => ((int)HttpStatusCode.BadRequest, businessRuleException.Message, (string[]?)null),
             ValidationException validationException => ((int)HttpStatusCode.BadRequest, "Validation failed.", validationException.Errors.Select(e => e.ErrorMessage).ToArray()),
+            UnauthorizedException unauthorizedException => ((int)HttpStatusCode.Unauthorized, unauthorizedException.Message, (string[]?)null),
             _ => ((int)HttpStatusCode.InternalServerError, "An unexpected error occurred.", (string[]?)null)
         };
 

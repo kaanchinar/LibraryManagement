@@ -1,6 +1,8 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
+using LibraryManagement.Application.Auth.Dtos;
 using LibraryManagement.Application.Authors.Dtos;
 using LibraryManagement.Application.Books.Dtos;
 using LibraryManagement.Application.Loans.Dtos;
@@ -12,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace LibraryManagement.IntegrationTests;
 
-public class LoansApiTests : IClassFixture<CustomWebApplicationFactory>
+public class LoansApiTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLifetime
 {
     private readonly HttpClient _client;
     private readonly CustomWebApplicationFactory _factory;
@@ -25,6 +27,16 @@ public class LoansApiTests : IClassFixture<CustomWebApplicationFactory>
             AllowAutoRedirect = false
         });
     }
+
+    public async Task InitializeAsync()
+    {
+        var response = await _client.PostAsJsonAsync("/api/auth/login",
+            new LoginRequest("admin@library.com", "Admin@123"));
+        var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result!.Token);
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task CreateLoan_Should_Return_201_When_Book_Available()

@@ -5,6 +5,7 @@ using LibraryManagement.Application.Members.Dtos;
 using LibraryManagement.Application.Members.Queries.GetMemberById;
 using LibraryManagement.Application.Members.Queries.GetMembers;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagement.API.Controllers;
@@ -14,6 +15,7 @@ namespace LibraryManagement.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class MembersController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -52,6 +54,7 @@ public class MembersController : ControllerBase
     /// <param name="dto">The member details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="201">The member was created successfully.</response>
+    [Authorize(Roles = "Admin,Librarian")]
     [HttpPost]
     public async Task<ActionResult> CreateMember([FromBody] CreateMemberDto dto, CancellationToken cancellationToken)
     {
@@ -66,6 +69,7 @@ public class MembersController : ControllerBase
     /// <param name="dto">The updated member details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="404">The member was not found.</response>
+    [Authorize(Roles = "Admin,Librarian")]
     [HttpPut("{id:guid}")]
     public async Task<ActionResult> UpdateMember(Guid id, [FromBody] UpdateMemberDto dto, CancellationToken cancellationToken)
     {
@@ -81,6 +85,7 @@ public class MembersController : ControllerBase
     /// <response code="204">The member was deleted successfully.</response>
     /// <response code="400">The member has associated loans and cannot be deleted.</response>
     /// <response code="404">The member was not found.</response>
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteMember(Guid id, CancellationToken cancellationToken)
     {

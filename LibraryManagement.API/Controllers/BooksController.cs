@@ -5,6 +5,7 @@ using LibraryManagement.Application.Books.Dtos;
 using LibraryManagement.Application.Books.Queries.GetBookById;
 using LibraryManagement.Application.Books.Queries.GetBooks;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagement.API.Controllers;
@@ -14,6 +15,7 @@ namespace LibraryManagement.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class BooksController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -52,6 +54,7 @@ public class BooksController : ControllerBase
     /// <param name="dto">The book details including author, and optionally genre and publisher.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="201">The book was created successfully.</response>
+    [Authorize(Roles = "Admin,Librarian")]
     [HttpPost]
     public async Task<ActionResult> CreateBook([FromBody] CreateBookDto dto, CancellationToken cancellationToken)
     {
@@ -66,6 +69,7 @@ public class BooksController : ControllerBase
     /// <param name="dto">The updated book details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="404">The book was not found.</response>
+    [Authorize(Roles = "Admin,Librarian")]
     [HttpPut("{id:guid}")]
     public async Task<ActionResult> UpdateBook(Guid id, [FromBody] UpdateBookDto dto, CancellationToken cancellationToken)
     {
@@ -81,6 +85,7 @@ public class BooksController : ControllerBase
     /// <response code="204">The book was deleted successfully.</response>
     /// <response code="400">The book has associated loans and cannot be deleted.</response>
     /// <response code="404">The book was not found.</response>
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteBook(Guid id, CancellationToken cancellationToken)
     {

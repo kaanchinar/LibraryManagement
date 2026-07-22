@@ -8,3 +8,4 @@ riderModule.iml
 *.pdf
 docs/*.png
 docs/*.html
+.env

@@ -1,4 +1,5 @@
 using LibraryManagement.Domain.Entities;
+using LibraryManagement.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Infrastructure.Data;
@@ -7,6 +8,8 @@ public static class SeedData
 {
     public static async Task SeedAsync(AppDbContext context)
     {
+        await SeedUsersAsync(context);
+
         if (await context.Authors.AnyAsync())
         {
             return;
@@ -88,6 +91,33 @@ public static class SeedData
         await context.Books.AddRangeAsync(book1, book2, book3);
         await context.Members.AddRangeAsync(member1, member2);
 
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedUsersAsync(AppDbContext context)
+    {
+        if (await context.Users.AnyAsync())
+        {
+            return;
+        }
+
+        var admin = new User
+        {
+            Id = Guid.NewGuid(),
+            Email = "admin@library.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+            Role = Role.Admin
+        };
+
+        var librarian = new User
+        {
+            Id = Guid.NewGuid(),
+            Email = "librarian@library.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Librarian@123"),
+            Role = Role.Librarian
+        };
+
+        await context.Users.AddRangeAsync(admin, librarian);
         await context.SaveChangesAsync();
     }
 }

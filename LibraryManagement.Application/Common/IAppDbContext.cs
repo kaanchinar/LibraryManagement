@@ -11,6 +11,7 @@ public interface IAppDbContext
     DbSet<Book> Books { get; }
     DbSet<Member> Members { get; }
     DbSet<Loan> Loans { get; }
+    DbSet<User> Users { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

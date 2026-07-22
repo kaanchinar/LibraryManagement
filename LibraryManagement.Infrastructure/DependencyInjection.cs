@@ -1,5 +1,6 @@
 using LibraryManagement.Application.Common;
 using LibraryManagement.Infrastructure.Data;
+using LibraryManagement.Infrastructure.Data.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ public static class DependencyInjection
                 b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
 
         return services;
     }

@@ -4,6 +4,7 @@ using LibraryManagement.Application.Loans.Dtos;
 using LibraryManagement.Application.Loans.Queries.GetLoanById;
 using LibraryManagement.Application.Loans.Queries.GetLoans;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagement.API.Controllers;
@@ -13,6 +14,7 @@ namespace LibraryManagement.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class LoansController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -52,6 +54,7 @@ public class LoansController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="201">The loan was created successfully.</response>
     /// <response code="400">The book has no available copies or the member is inactive.</response>
+    [Authorize(Roles = "Admin,Librarian")]
     [HttpPost]
     public async Task<ActionResult> CreateLoan([FromBody] CreateLoanDto dto, CancellationToken cancellationToken)
     {
@@ -67,6 +70,7 @@ public class LoansController : ControllerBase
     /// <response code="204">The loan was returned successfully.</response>
     /// <response code="400">The loan has already been returned.</response>
     /// <response code="404">The loan was not found.</response>
+    [Authorize(Roles = "Admin,Librarian")]
     [HttpPost("{id:guid}/return")]
     public async Task<ActionResult> ReturnLoan(Guid id, CancellationToken cancellationToken)
     {

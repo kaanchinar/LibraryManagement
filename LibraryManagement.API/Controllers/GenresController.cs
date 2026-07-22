@@ -5,6 +5,7 @@ using LibraryManagement.Application.Genres.Dtos;
 using LibraryManagement.Application.Genres.Queries.GetGenreById;
 using LibraryManagement.Application.Genres.Queries.GetGenres;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagement.API.Controllers;
@@ -14,6 +15,7 @@ namespace LibraryManagement.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class GenresController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -52,6 +54,7 @@ public class GenresController : ControllerBase
     /// <param name="dto">The genre details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="201">The genre was created successfully.</response>
+    [Authorize(Roles = "Admin,Librarian")]
     [HttpPost]
     public async Task<ActionResult> CreateGenre([FromBody] CreateGenreDto dto, CancellationToken cancellationToken)
     {
@@ -66,6 +69,7 @@ public class GenresController : ControllerBase
     /// <param name="dto">The updated genre details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="404">The genre was not found.</response>
+    [Authorize(Roles = "Admin,Librarian")]
     [HttpPut("{id:guid}")]
     public async Task<ActionResult> UpdateGenre(Guid id, [FromBody] UpdateGenreDto dto, CancellationToken cancellationToken)
     {
@@ -81,6 +85,7 @@ public class GenresController : ControllerBase
     /// <response code="204">The genre was deleted successfully.</response>
     /// <response code="400">The genre has associated books and cannot be deleted.</response>
     /// <response code="404">The genre was not found.</response>
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteGenre(Guid id, CancellationToken cancellationToken)
     {

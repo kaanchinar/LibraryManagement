@@ -5,6 +5,7 @@ using LibraryManagement.Application.Publishers.Dtos;
 using LibraryManagement.Application.Publishers.Queries.GetPublisherById;
 using LibraryManagement.Application.Publishers.Queries.GetPublishers;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagement.API.Controllers;
@@ -14,6 +15,7 @@ namespace LibraryManagement.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class PublishersController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -52,6 +54,7 @@ public class PublishersController : ControllerBase
     /// <param name="dto">The publisher details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="201">The publisher was created successfully.</response>
+    [Authorize(Roles = "Admin,Librarian")]
     [HttpPost]
     public async Task<ActionResult> CreatePublisher([FromBody] CreatePublisherDto dto, CancellationToken cancellationToken)
     {
@@ -66,6 +69,7 @@ public class PublishersController : ControllerBase
     /// <param name="dto">The updated publisher details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="404">The publisher was not found.</response>
+    [Authorize(Roles = "Admin,Librarian")]
     [HttpPut("{id:guid}")]
     public async Task<ActionResult> UpdatePublisher(Guid id, [FromBody] UpdatePublisherDto dto, CancellationToken cancellationToken)
     {
@@ -81,6 +85,7 @@ public class PublishersController : ControllerBase
     /// <response code="204">The publisher was deleted successfully.</response>
     /// <response code="400">The publisher has associated books and cannot be deleted.</response>
     /// <response code="404">The publisher was not found.</response>
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeletePublisher(Guid id, CancellationToken cancellationToken)
     {

@@ -16,6 +16,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Book> Books => Set<Book>();
     public DbSet<Member> Members => Set<Member>();
     public DbSet<Loan> Loans => Set<Loan>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,14 +37,15 @@ public class AppDbContext : DbContext, IAppDbContext
 
         foreach (var entry in entries)
         {
-            if (entry.State == EntityState.Added)
+            switch (entry)
             {
-                entry.Entity.CreatedAt = now;
-                entry.Entity.UpdatedAt = now;
-            }
-            else if (entry.State == EntityState.Modified)
-            {
-                entry.Entity.UpdatedAt = now;
+                case { State: EntityState.Added }:
+                    entry.Entity.CreatedAt = now;
+                    entry.Entity.UpdatedAt = now;
+                    break;
+                case { State: EntityState.Modified }:
+                    entry.Entity.UpdatedAt = now;
+                    break;
             }
         }
     }
