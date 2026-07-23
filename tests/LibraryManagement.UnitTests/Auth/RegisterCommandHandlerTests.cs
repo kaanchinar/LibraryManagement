@@ -6,6 +6,7 @@ using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Enums;
 using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Infrastructure.Data;
+using LibraryManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 
@@ -34,7 +35,8 @@ public class RegisterCommandHandlerTests
         refreshService.Setup(s => s.HashToken(It.IsAny<string>()))
             .Returns((string t) => $"hash-{t}");
 
-        return new AuthTokenIssuer(context, jwtService.Object, refreshService.Object);
+        return new AuthTokenIssuer(jwtService.Object, refreshService.Object,
+            new RefreshTokenRepository(context), new UnitOfWork(context));
     }
 
     [Fact]
@@ -42,7 +44,7 @@ public class RegisterCommandHandlerTests
     {
         // Arrange
         await using var context = CreateContext();
-        var handler = new RegisterCommandHandler(context, CreateTokenIssuer(context));
+        var handler = new RegisterCommandHandler(new UserRepository(context), new MemberRepository(context), CreateTokenIssuer(context));
         var command = new RegisterCommand("New Member", "new@example.com", "Password123");
 
         // Act
@@ -77,7 +79,7 @@ public class RegisterCommandHandlerTests
         });
         await context.SaveChangesAsync();
 
-        var handler = new RegisterCommandHandler(context, CreateTokenIssuer(context));
+        var handler = new RegisterCommandHandler(new UserRepository(context), new MemberRepository(context), CreateTokenIssuer(context));
         var command = new RegisterCommand("Someone", "taken@example.com", "Password123");
 
         // Act
@@ -102,7 +104,7 @@ public class RegisterCommandHandlerTests
         });
         await context.SaveChangesAsync();
 
-        var handler = new RegisterCommandHandler(context, CreateTokenIssuer(context));
+        var handler = new RegisterCommandHandler(new UserRepository(context), new MemberRepository(context), CreateTokenIssuer(context));
         var command = new RegisterCommand("Someone", "member@example.com", "Password123");
 
         // Act

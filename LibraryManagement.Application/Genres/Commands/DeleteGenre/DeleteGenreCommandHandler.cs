@@ -1,25 +1,16 @@
+using LibraryManagement.Application.Common;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
-using LibraryManagement.Application.Common;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Application.Genres.Commands.DeleteGenre;
 
-public class DeleteGenreCommandHandler : IRequestHandler<DeleteGenreCommand, Unit>
+public class DeleteGenreCommandHandler(IGenreRepository genres, IUnitOfWork unitOfWork)
+    : IRequestHandler<DeleteGenreCommand, Unit>
 {
-    private readonly IAppDbContext _context;
-
-    public DeleteGenreCommandHandler(IAppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<Unit> Handle(DeleteGenreCommand request, CancellationToken cancellationToken)
     {
-        var genre = await _context.Genres
-            .Include(g => g.Books)
-            .FirstOrDefaultAsync(g => g.Id == request.Id, cancellationToken);
+        var genre = await genres.GetByIdWithBooksAsync(request.Id, cancellationToken);
 
         if (genre is null)
         {
@@ -31,8 +22,8 @@ public class DeleteGenreCommandHandler : IRequestHandler<DeleteGenreCommand, Uni
             throw new BusinessRuleException("Cannot delete a genre that has books.");
         }
 
-        _context.Genres.Remove(genre);
-        await _context.SaveChangesAsync(cancellationToken);
+        genres.Remove(genre);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return Unit.Value;
     }
 }

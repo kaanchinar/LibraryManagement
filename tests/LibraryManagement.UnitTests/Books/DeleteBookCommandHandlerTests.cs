@@ -3,6 +3,7 @@ using LibraryManagement.Application.Books.Commands.DeleteBook;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Infrastructure.Data;
+using LibraryManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.UnitTests.Books;
@@ -22,7 +23,7 @@ public class DeleteBookCommandHandlerTests
     public async Task Handle_Should_Throw_NotFoundException_When_Book_Does_Not_Exist()
     {
         await using var context = CreateContext();
-        var handler = new DeleteBookCommandHandler(context);
+        var handler = new DeleteBookCommandHandler(new BookRepository(context), new UnitOfWork(context));
         var nonExistentId = Guid.NewGuid();
 
         var act = () => handler.Handle(new DeleteBookCommand(nonExistentId), CancellationToken.None);
@@ -50,7 +51,7 @@ public class DeleteBookCommandHandlerTests
         context.Books.Add(book);
         await context.SaveChangesAsync();
 
-        var handler = new DeleteBookCommandHandler(context);
+        var handler = new DeleteBookCommandHandler(new BookRepository(context), new UnitOfWork(context));
         await handler.Handle(new DeleteBookCommand(book.Id), CancellationToken.None);
 
         (await context.Books.CountAsync()).Should().Be(0);
@@ -97,7 +98,7 @@ public class DeleteBookCommandHandlerTests
         context.Loans.Add(loan);
         await context.SaveChangesAsync();
 
-        var handler = new DeleteBookCommandHandler(context);
+        var handler = new DeleteBookCommandHandler(new BookRepository(context), new UnitOfWork(context));
         var act = () => handler.Handle(new DeleteBookCommand(book.Id), CancellationToken.None);
 
         await act.Should().ThrowAsync<BusinessRuleException>()

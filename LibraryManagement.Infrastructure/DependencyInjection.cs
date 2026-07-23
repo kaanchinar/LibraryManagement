@@ -1,6 +1,7 @@
 using LibraryManagement.Application.Common;
 using LibraryManagement.Infrastructure.Data;
 using LibraryManagement.Infrastructure.Data.Services;
+using LibraryManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,9 +16,18 @@ public static class DependencyInjection
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
-        services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IAuthorRepository, AuthorRepository>();
+        services.AddScoped<IBookRepository, BookRepository>();
+        services.AddScoped<IGenreRepository, GenreRepository>();
+        services.AddScoped<IMemberRepository, MemberRepository>();
+        services.AddScoped<IPublisherRepository, PublisherRepository>();
+        services.AddScoped<ILoanRepository, LoanRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
         return services;
     }

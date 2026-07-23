@@ -1,23 +1,17 @@
+using LibraryManagement.Application.Common;
 using LibraryManagement.Application.Publishers.Dtos;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
-using LibraryManagement.Application.Common;
 using MediatR;
 
 namespace LibraryManagement.Application.Publishers.Queries.GetPublisherById;
 
-public class GetPublisherByIdQueryHandler : IRequestHandler<GetPublisherByIdQuery, PublisherDto>
+public class GetPublisherByIdQueryHandler(IPublisherRepository publishers)
+    : IRequestHandler<GetPublisherByIdQuery, PublisherDto>
 {
-    private readonly IAppDbContext _context;
-
-    public GetPublisherByIdQueryHandler(IAppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<PublisherDto> Handle(GetPublisherByIdQuery request, CancellationToken cancellationToken)
     {
-        var publisher = await _context.Publishers.FindAsync(new object[] { request.Id }, cancellationToken);
+        var publisher = await publishers.GetByIdAsync(request.Id, cancellationToken);
 
         if (publisher is null)
         {

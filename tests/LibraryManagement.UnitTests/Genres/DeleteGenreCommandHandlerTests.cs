@@ -3,6 +3,7 @@ using LibraryManagement.Application.Genres.Commands.DeleteGenre;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Infrastructure.Data;
+using LibraryManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.UnitTests.Genres;
@@ -22,7 +23,7 @@ public class DeleteGenreCommandHandlerTests
     public async Task Handle_Should_Throw_NotFoundException_When_Genre_Does_Not_Exist()
     {
         await using var context = CreateContext();
-        var handler = new DeleteGenreCommandHandler(context);
+        var handler = new DeleteGenreCommandHandler(new GenreRepository(context), new UnitOfWork(context));
         var nonExistentId = Guid.NewGuid();
 
         var act = () => handler.Handle(new DeleteGenreCommand(nonExistentId), CancellationToken.None);
@@ -38,7 +39,7 @@ public class DeleteGenreCommandHandlerTests
         context.Genres.Add(genre);
         await context.SaveChangesAsync();
 
-        var handler = new DeleteGenreCommandHandler(context);
+        var handler = new DeleteGenreCommandHandler(new GenreRepository(context), new UnitOfWork(context));
         await handler.Handle(new DeleteGenreCommand(genre.Id), CancellationToken.None);
 
         (await context.Genres.CountAsync()).Should().Be(0);
@@ -69,7 +70,7 @@ public class DeleteGenreCommandHandlerTests
         context.Books.Add(book);
         await context.SaveChangesAsync();
 
-        var handler = new DeleteGenreCommandHandler(context);
+        var handler = new DeleteGenreCommandHandler(new GenreRepository(context), new UnitOfWork(context));
         var act = () => handler.Handle(new DeleteGenreCommand(genre.Id), CancellationToken.None);
 
         await act.Should().ThrowAsync<BusinessRuleException>()

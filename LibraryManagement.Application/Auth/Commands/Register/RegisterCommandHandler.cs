@@ -4,17 +4,19 @@ using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Enums;
 using LibraryManagement.Domain.Exceptions;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Application.Auth.Commands.Register;
 
-public class RegisterCommandHandler(IAppDbContext context, AuthTokenIssuer tokenIssuer)
+public class RegisterCommandHandler(
+    IUserRepository users,
+    IMemberRepository members,
+    AuthTokenIssuer tokenIssuer)
     : IRequestHandler<RegisterCommand, AuthResponse>
 {
     public async Task<AuthResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
-        var emailTaken = await context.Users.AnyAsync(u => u.Email == request.Email, cancellationToken)
-            || await context.Members.AnyAsync(m => m.Email == request.Email, cancellationToken);
+        var emailTaken = await users.EmailExistsAsync(request.Email, cancellationToken)
+            || await members.EmailExistsAsync(request.Email, cancellationToken);
 
         if (emailTaken)
         {
@@ -39,8 +41,7 @@ public class RegisterCommandHandler(IAppDbContext context, AuthTokenIssuer token
             Member = member
         };
 
-        context.Users.Add(user);
-        await context.SaveChangesAsync(cancellationToken);
+        await users.AddAsync(user, cancellationToken);
 
         return await tokenIssuer.IssueAsync(user, cancellationToken);
     }

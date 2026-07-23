@@ -4,6 +4,7 @@ using LibraryManagement.Application.Loans.Dtos;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Infrastructure.Data;
+using LibraryManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.UnitTests.Loans;
@@ -30,7 +31,7 @@ public class CreateLoanCommandHandlerTests
         await context.Members.AddAsync(member);
         await context.SaveChangesAsync();
 
-        var handler = new CreateLoanCommandHandler(context);
+        var handler = new CreateLoanCommandHandler(new BookRepository(context), new MemberRepository(context), new LoanRepository(context), new UnitOfWork(context));
         var dto = new CreateLoanDto { BookId = book.Id, MemberId = member.Id };
 
         // Act
@@ -52,7 +53,7 @@ public class CreateLoanCommandHandlerTests
         await context.Members.AddAsync(member);
         await context.SaveChangesAsync();
 
-        var handler = new CreateLoanCommandHandler(context);
+        var handler = new CreateLoanCommandHandler(new BookRepository(context), new MemberRepository(context), new LoanRepository(context), new UnitOfWork(context));
         var dto = new CreateLoanDto { BookId = book.Id, MemberId = member.Id };
 
         // Act
@@ -73,7 +74,7 @@ public class CreateLoanCommandHandlerTests
         await context.Members.AddAsync(member);
         await context.SaveChangesAsync();
 
-        var handler = new CreateLoanCommandHandler(context);
+        var handler = new CreateLoanCommandHandler(new BookRepository(context), new MemberRepository(context), new LoanRepository(context), new UnitOfWork(context));
         var dto = new CreateLoanDto { BookId = book.Id, MemberId = member.Id };
 
         // Act

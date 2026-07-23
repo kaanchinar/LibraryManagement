@@ -1,25 +1,15 @@
-using LibraryManagement.Domain.Entities;
-using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Application.Common;
+using LibraryManagement.Domain.Exceptions;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Application.Loans.Commands.ReturnLoan;
 
-public class ReturnLoanCommandHandler : IRequestHandler<ReturnLoanCommand, Unit>
+public class ReturnLoanCommandHandler(ILoanRepository loans, IUnitOfWork unitOfWork)
+    : IRequestHandler<ReturnLoanCommand, Unit>
 {
-    private readonly IAppDbContext _context;
-
-    public ReturnLoanCommandHandler(IAppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<Unit> Handle(ReturnLoanCommand request, CancellationToken cancellationToken)
     {
-        var loan = await _context.Loans.AsNoTracking()
-            .Include(l => l.Book)
-            .FirstOrDefaultAsync(l => l.Id == request.Id, cancellationToken);
+        var loan = await loans.GetByIdWithBookAsync(request.Id, cancellationToken);
 
         if (loan is null)
         {
@@ -35,8 +25,7 @@ public class ReturnLoanCommandHandler : IRequestHandler<ReturnLoanCommand, Unit>
         loan.IsReturned = true;
         loan.Book.AvailableCopies++;
 
-        _context.Loans.Update(loan);
-        await _context.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return Unit.Value;
     }
 }

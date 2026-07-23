@@ -3,6 +3,7 @@ using LibraryManagement.Application.Authors.Commands.CreateAuthor;
 using LibraryManagement.Application.Authors.Dtos;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Infrastructure.Data;
+using LibraryManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.UnitTests.Authors;
@@ -23,7 +24,7 @@ public class CreateAuthorCommandHandlerTests
     {
         // Arrange
         await using var context = CreateContext();
-        var handler = new CreateAuthorCommandHandler(context);
+        var handler = new CreateAuthorCommandHandler(new AuthorRepository(context), new UnitOfWork(context));
         var dto = new CreateAuthorDto { Name = "Test Author", Bio = "Bio" };
 
         // Act

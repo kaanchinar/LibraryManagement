@@ -1,25 +1,16 @@
+using LibraryManagement.Application.Common;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
-using LibraryManagement.Application.Common;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Application.Members.Commands.DeleteMember;
 
-public class DeleteMemberCommandHandler : IRequestHandler<DeleteMemberCommand, Unit>
+public class DeleteMemberCommandHandler(IMemberRepository members, IUnitOfWork unitOfWork)
+    : IRequestHandler<DeleteMemberCommand, Unit>
 {
-    private readonly IAppDbContext _context;
-
-    public DeleteMemberCommandHandler(IAppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<Unit> Handle(DeleteMemberCommand request, CancellationToken cancellationToken)
     {
-        var member = await _context.Members
-            .Include(m => m.Loans)
-            .FirstOrDefaultAsync(m => m.Id == request.Id, cancellationToken);
+        var member = await members.GetByIdWithLoansAsync(request.Id, cancellationToken);
 
         if (member is null)
         {
@@ -31,8 +22,8 @@ public class DeleteMemberCommandHandler : IRequestHandler<DeleteMemberCommand, U
             throw new BusinessRuleException("Cannot delete a member that has loans.");
         }
 
-        _context.Members.Remove(member);
-        await _context.SaveChangesAsync(cancellationToken);
+        members.Remove(member);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return Unit.Value;
     }
 }

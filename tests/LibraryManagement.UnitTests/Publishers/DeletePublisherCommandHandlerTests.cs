@@ -3,6 +3,7 @@ using LibraryManagement.Application.Publishers.Commands.DeletePublisher;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Infrastructure.Data;
+using LibraryManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.UnitTests.Publishers;
@@ -22,7 +23,7 @@ public class DeletePublisherCommandHandlerTests
     public async Task Handle_Should_Throw_NotFoundException_When_Publisher_Does_Not_Exist()
     {
         await using var context = CreateContext();
-        var handler = new DeletePublisherCommandHandler(context);
+        var handler = new DeletePublisherCommandHandler(new PublisherRepository(context), new UnitOfWork(context));
         var nonExistentId = Guid.NewGuid();
 
         var act = () => handler.Handle(new DeletePublisherCommand(nonExistentId), CancellationToken.None);
@@ -38,7 +39,7 @@ public class DeletePublisherCommandHandlerTests
         context.Publishers.Add(publisher);
         await context.SaveChangesAsync();
 
-        var handler = new DeletePublisherCommandHandler(context);
+        var handler = new DeletePublisherCommandHandler(new PublisherRepository(context), new UnitOfWork(context));
         await handler.Handle(new DeletePublisherCommand(publisher.Id), CancellationToken.None);
 
         (await context.Publishers.CountAsync()).Should().Be(0);
@@ -69,7 +70,7 @@ public class DeletePublisherCommandHandlerTests
         context.Books.Add(book);
         await context.SaveChangesAsync();
 
-        var handler = new DeletePublisherCommandHandler(context);
+        var handler = new DeletePublisherCommandHandler(new PublisherRepository(context), new UnitOfWork(context));
         var act = () => handler.Handle(new DeletePublisherCommand(publisher.Id), CancellationToken.None);
 
         await act.Should().ThrowAsync<BusinessRuleException>()

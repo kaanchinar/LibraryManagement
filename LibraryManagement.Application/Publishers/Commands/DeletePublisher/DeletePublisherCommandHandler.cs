@@ -1,25 +1,16 @@
+using LibraryManagement.Application.Common;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
-using LibraryManagement.Application.Common;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Application.Publishers.Commands.DeletePublisher;
 
-public class DeletePublisherCommandHandler : IRequestHandler<DeletePublisherCommand, Unit>
+public class DeletePublisherCommandHandler(IPublisherRepository publishers, IUnitOfWork unitOfWork)
+    : IRequestHandler<DeletePublisherCommand, Unit>
 {
-    private readonly IAppDbContext _context;
-
-    public DeletePublisherCommandHandler(IAppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<Unit> Handle(DeletePublisherCommand request, CancellationToken cancellationToken)
     {
-        var publisher = await _context.Publishers
-            .Include(p => p.Books)
-            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
+        var publisher = await publishers.GetByIdWithBooksAsync(request.Id, cancellationToken);
 
         if (publisher is null)
         {
@@ -31,8 +22,8 @@ public class DeletePublisherCommandHandler : IRequestHandler<DeletePublisherComm
             throw new BusinessRuleException("Cannot delete a publisher that has books.");
         }
 
-        _context.Publishers.Remove(publisher);
-        await _context.SaveChangesAsync(cancellationToken);
+        publishers.Remove(publisher);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return Unit.Value;
     }
 }

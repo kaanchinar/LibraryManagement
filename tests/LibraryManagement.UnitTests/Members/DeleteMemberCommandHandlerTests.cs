@@ -3,6 +3,7 @@ using LibraryManagement.Application.Members.Commands.DeleteMember;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Infrastructure.Data;
+using LibraryManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.UnitTests.Members;
@@ -22,7 +23,7 @@ public class DeleteMemberCommandHandlerTests
     public async Task Handle_Should_Throw_NotFoundException_When_Member_Does_Not_Exist()
     {
         await using var context = CreateContext();
-        var handler = new DeleteMemberCommandHandler(context);
+        var handler = new DeleteMemberCommandHandler(new MemberRepository(context), new UnitOfWork(context));
         var nonExistentId = Guid.NewGuid();
 
         var act = () => handler.Handle(new DeleteMemberCommand(nonExistentId), CancellationToken.None);
@@ -44,7 +45,7 @@ public class DeleteMemberCommandHandlerTests
         context.Members.Add(member);
         await context.SaveChangesAsync();
 
-        var handler = new DeleteMemberCommandHandler(context);
+        var handler = new DeleteMemberCommandHandler(new MemberRepository(context), new UnitOfWork(context));
         await handler.Handle(new DeleteMemberCommand(member.Id), CancellationToken.None);
 
         (await context.Members.CountAsync()).Should().Be(0);
@@ -91,7 +92,7 @@ public class DeleteMemberCommandHandlerTests
         context.Loans.Add(loan);
         await context.SaveChangesAsync();
 
-        var handler = new DeleteMemberCommandHandler(context);
+        var handler = new DeleteMemberCommandHandler(new MemberRepository(context), new UnitOfWork(context));
         var act = () => handler.Handle(new DeleteMemberCommand(member.Id), CancellationToken.None);
 
         await act.Should().ThrowAsync<BusinessRuleException>()

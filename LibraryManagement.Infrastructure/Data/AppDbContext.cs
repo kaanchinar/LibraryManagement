@@ -1,10 +1,9 @@
-using LibraryManagement.Application.Common;
 using LibraryManagement.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Infrastructure.Data;
 
-public class AppDbContext : DbContext, IAppDbContext
+public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {

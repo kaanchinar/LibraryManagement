@@ -2,22 +2,20 @@ using LibraryManagement.Application.Auth.Dtos;
 using LibraryManagement.Application.Common;
 using LibraryManagement.Domain.Exceptions;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Application.Auth.Commands.RefreshToken;
 
 public class RefreshTokenCommandHandler(
-    IAppDbContext context,
     IRefreshTokenService refreshTokenService,
+    IRefreshTokenRepository refreshTokens,
+    IUnitOfWork unitOfWork,
     AuthTokenIssuer tokenIssuer)
     : IRequestHandler<RefreshTokenCommand, AuthResponse>
 {
     public async Task<AuthResponse> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
     {
         var hash = refreshTokenService.HashToken(request.RefreshToken);
-        var stored = await context.RefreshTokens
-            .Include(r => r.User)
-            .FirstOrDefaultAsync(r => r.TokenHash == hash, cancellationToken);
+        var stored = await refreshTokens.GetByHashWithUserAsync(hash, cancellationToken);
 
         if (stored is null)
         {
@@ -26,15 +24,13 @@ public class RefreshTokenCommandHandler(
 
         if (stored.RevokedAt is not null)
         {
-            var activeTokens = await context.RefreshTokens
-                .Where(r => r.UserId == stored.UserId && r.RevokedAt == null)
-                .ToListAsync(cancellationToken);
+            var activeTokens = await refreshTokens.GetActiveByUserIdAsync(stored.UserId, cancellationToken);
 
             foreach (var t in activeTokens)
             {
                 t.RevokedAt = DateTime.UtcNow;
             }
-            await context.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
             throw new UnauthorizedException("Refresh token has been revoked.");
         }

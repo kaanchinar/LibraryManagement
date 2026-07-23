@@ -1,25 +1,16 @@
+using LibraryManagement.Application.Common;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
-using LibraryManagement.Application.Common;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Application.Books.Commands.DeleteBook;
 
-public class DeleteBookCommandHandler : IRequestHandler<DeleteBookCommand, Unit>
+public class DeleteBookCommandHandler(IBookRepository books, IUnitOfWork unitOfWork)
+    : IRequestHandler<DeleteBookCommand, Unit>
 {
-    private readonly IAppDbContext _context;
-
-    public DeleteBookCommandHandler(IAppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<Unit> Handle(DeleteBookCommand request, CancellationToken cancellationToken)
     {
-        var book = await _context.Books
-            .Include(b => b.Loans)
-            .FirstOrDefaultAsync(b => b.Id == request.Id, cancellationToken);
+        var book = await books.GetByIdWithLoansAsync(request.Id, cancellationToken);
 
         if (book is null)
         {
@@ -31,8 +22,8 @@ public class DeleteBookCommandHandler : IRequestHandler<DeleteBookCommand, Unit>
             throw new BusinessRuleException("Cannot delete a book that has loans.");
         }
 
-        _context.Books.Remove(book);
-        await _context.SaveChangesAsync(cancellationToken);
+        books.Remove(book);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return Unit.Value;
     }
 }

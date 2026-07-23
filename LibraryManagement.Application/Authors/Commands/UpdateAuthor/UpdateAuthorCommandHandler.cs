@@ -1,23 +1,17 @@
 using LibraryManagement.Application.Authors.Dtos;
+using LibraryManagement.Application.Common;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
-using LibraryManagement.Application.Common;
 using MediatR;
 
 namespace LibraryManagement.Application.Authors.Commands.UpdateAuthor;
 
-public class UpdateAuthorCommandHandler : IRequestHandler<UpdateAuthorCommand, AuthorDto>
+public class UpdateAuthorCommandHandler(IAuthorRepository authors, IUnitOfWork unitOfWork)
+    : IRequestHandler<UpdateAuthorCommand, AuthorDto>
 {
-    private readonly IAppDbContext _context;
-
-    public UpdateAuthorCommandHandler(IAppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<AuthorDto> Handle(UpdateAuthorCommand request, CancellationToken cancellationToken)
     {
-        var author = await _context.Authors.FindAsync(new object[] { request.Id }, cancellationToken);
+        var author = await authors.GetByIdAsync(request.Id, cancellationToken);
 
         if (author is null)
         {
@@ -25,8 +19,7 @@ public class UpdateAuthorCommandHandler : IRequestHandler<UpdateAuthorCommand, A
         }
 
         request.Dto.UpdateEntity(author);
-        _context.Authors.Update(author);
-        await _context.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return author.ToDto();
     }
 }

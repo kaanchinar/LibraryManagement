@@ -3,6 +3,7 @@ using LibraryManagement.Application.Loans.Commands.ReturnLoan;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Infrastructure.Data;
+using LibraryManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.UnitTests.Loans;
@@ -35,7 +36,7 @@ public class ReturnLoanCommandHandlerTests
             await seedContext.Loans.AddAsync(loan);
             await seedContext.SaveChangesAsync();
 
-            var handler = new ReturnLoanCommandHandler(handlerContext);
+            var handler = new ReturnLoanCommandHandler(new LoanRepository(handlerContext), new UnitOfWork(handlerContext));
 
             // Act
             await handler.Handle(new ReturnLoanCommand(loan.Id), CancellationToken.None);
@@ -65,7 +66,7 @@ public class ReturnLoanCommandHandlerTests
             await seedContext.Loans.AddAsync(loan);
             await seedContext.SaveChangesAsync();
 
-            var handler = new ReturnLoanCommandHandler(handlerContext);
+            var handler = new ReturnLoanCommandHandler(new LoanRepository(handlerContext), new UnitOfWork(handlerContext));
 
             // Act
             var act = async () => await handler.Handle(new ReturnLoanCommand(loan.Id), CancellationToken.None);

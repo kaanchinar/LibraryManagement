@@ -3,6 +3,7 @@ using LibraryManagement.Application.Authors.Commands.DeleteAuthor;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
 using LibraryManagement.Infrastructure.Data;
+using LibraryManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.UnitTests.Authors;
@@ -22,7 +23,7 @@ public class DeleteAuthorCommandHandlerTests
     public async Task Handle_Should_Throw_NotFoundException_When_Author_Does_Not_Exist()
     {
         await using var context = CreateContext();
-        var handler = new DeleteAuthorCommandHandler(context);
+        var handler = new DeleteAuthorCommandHandler(new AuthorRepository(context), new UnitOfWork(context));
         var nonExistentId = Guid.NewGuid();
 
         var act = () => handler.Handle(new DeleteAuthorCommand(nonExistentId), CancellationToken.None);
@@ -38,7 +39,7 @@ public class DeleteAuthorCommandHandlerTests
         context.Authors.Add(author);
         await context.SaveChangesAsync();
 
-        var handler = new DeleteAuthorCommandHandler(context);
+        var handler = new DeleteAuthorCommandHandler(new AuthorRepository(context), new UnitOfWork(context));
         await handler.Handle(new DeleteAuthorCommand(author.Id), CancellationToken.None);
 
         (await context.Authors.CountAsync()).Should().Be(0);
@@ -64,7 +65,7 @@ public class DeleteAuthorCommandHandlerTests
         context.Books.Add(book);
         await context.SaveChangesAsync();
 
-        var handler = new DeleteAuthorCommandHandler(context);
+        var handler = new DeleteAuthorCommandHandler(new AuthorRepository(context), new UnitOfWork(context));
         var act = () => handler.Handle(new DeleteAuthorCommand(author.Id), CancellationToken.None);
 
         await act.Should().ThrowAsync<BusinessRuleException>()

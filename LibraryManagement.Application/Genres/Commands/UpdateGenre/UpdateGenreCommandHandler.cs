@@ -1,23 +1,17 @@
+using LibraryManagement.Application.Common;
 using LibraryManagement.Application.Genres.Dtos;
 using LibraryManagement.Domain.Entities;
 using LibraryManagement.Domain.Exceptions;
-using LibraryManagement.Application.Common;
 using MediatR;
 
 namespace LibraryManagement.Application.Genres.Commands.UpdateGenre;
 
-public class UpdateGenreCommandHandler : IRequestHandler<UpdateGenreCommand, GenreDto>
+public class UpdateGenreCommandHandler(IGenreRepository genres, IUnitOfWork unitOfWork)
+    : IRequestHandler<UpdateGenreCommand, GenreDto>
 {
-    private readonly IAppDbContext _context;
-
-    public UpdateGenreCommandHandler(IAppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<GenreDto> Handle(UpdateGenreCommand request, CancellationToken cancellationToken)
     {
-        var genre = await _context.Genres.FindAsync(new object[] { request.Id }, cancellationToken);
+        var genre = await genres.GetByIdAsync(request.Id, cancellationToken);
 
         if (genre is null)
         {
@@ -25,8 +19,7 @@ public class UpdateGenreCommandHandler : IRequestHandler<UpdateGenreCommand, Gen
         }
 
         request.Dto.UpdateEntity(genre);
-        _context.Genres.Update(genre);
-        await _context.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return genre.ToDto();
     }
 }
