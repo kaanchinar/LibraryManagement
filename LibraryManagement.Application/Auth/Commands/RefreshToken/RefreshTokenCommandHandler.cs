@@ -8,14 +8,13 @@ namespace LibraryManagement.Application.Auth.Commands.RefreshToken;
 
 public class RefreshTokenCommandHandler(
     IAppDbContext context,
-    IJwtTokenService jwtTokenService,
-    IRefreshTokenService refreshTokenService)
+    IRefreshTokenService refreshTokenService,
+    AuthTokenIssuer tokenIssuer)
     : IRequestHandler<RefreshTokenCommand, AuthResponse>
 {
     public async Task<AuthResponse> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
     {
         var hash = refreshTokenService.HashToken(request.RefreshToken);
-
         var stored = await context.RefreshTokens
             .Include(r => r.User)
             .FirstOrDefaultAsync(r => r.TokenHash == hash, cancellationToken);
@@ -46,18 +45,6 @@ public class RefreshTokenCommandHandler(
         }
 
         stored.RevokedAt = DateTime.UtcNow;
-
-        var newRefreshToken = refreshTokenService.GenerateToken();
-        context.RefreshTokens.Add(new Domain.Entities.RefreshToken
-        {
-            Id = Guid.NewGuid(),
-            TokenHash = refreshTokenService.HashToken(newRefreshToken.Token),
-            ExpiresAt = newRefreshToken.ExpiresAt,
-            UserId = stored.UserId
-        });
-        await context.SaveChangesAsync(cancellationToken);
-
-        var token = jwtTokenService.GenerateToken(stored.User);
-        return new AuthResponse(token.Token, token.ExpiresAt, newRefreshToken.Token);
+        return await tokenIssuer.IssueAsync(stored.User, cancellationToken);
     }
 }

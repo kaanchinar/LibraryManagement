@@ -1,5 +1,6 @@
 using LibraryManagement.Application.Auth.Commands.Login;
 using LibraryManagement.Application.Auth.Commands.RefreshToken;
+using LibraryManagement.Application.Auth.Commands.Register;
 using LibraryManagement.Application.Auth.Dtos;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -31,6 +32,19 @@ public class AuthController(IMediator mediator) : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new RefreshTokenCommand(request.RefreshToken), cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Registers a new member account and returns a JWT token pair.
+    /// </summary>
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new RegisterCommand(request.FullName, request.Email, request.Password), cancellationToken);
         return Ok(result);
     }
 }
